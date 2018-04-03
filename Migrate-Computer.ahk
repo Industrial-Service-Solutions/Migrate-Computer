@@ -90,7 +90,7 @@ Try {
 __startup__:
   DoLogging("")
   DoLogging("__ __startup__")
-  WinMinimizeAll
+  ; WinMinimizeAll
   WinRestore, Console Window
   Gosub __subStartupGUI__ ; Here is where we construct the GUI and get the specific information we need
   Return ; Execution should stop here until the user submits ButtonStart
@@ -105,11 +105,12 @@ __main__: ; if we're running in __main__, we should have all the input we need f
   DoLogging("__ __main__")
 
 
-  Gosub, __subGetPrintersAndPSDrives__
+  Gosub, __subExportInformation__
 
-; Copy Credential Manager Probably
-; Check for PST 
-; Remove Domain/Reboot  Yes
+; create local account
+
+  Gosub, __subRemoveFromDomain__ ; then reboot
+
 ; Rename/Join Domain/Reboot Yes
 ; Login as user/Log Out Yes
 ; Login with Domain Admin Yes
@@ -117,7 +118,7 @@ __main__: ; if we're running in __main__, we should have all the input we need f
 ; Copy Profile MADSMITH.LCL User to ISS.lcl Only Kind Of
 ; Reboot  Yes
 ; Login as User Yes
-; Re add Credentials  Possibly Partially
+; Re add Credentials Possibly Partially
 ; Remove MSP Stuff  
 ; Remove Old Office/Install Office 2016 Yes
 ; Setup Email Ask Mark
@@ -142,4 +143,5 @@ MsgBox Cthuhlu! ; This should never run!
 ;   FUNCTIONS AND LABELS
 ;   ================================================================================
 #Include, Migrate-Computer-Functions.ahk
+#Include, Migrate-Computer-Labels.ahk
 #Include, DynamicCommand.ahk

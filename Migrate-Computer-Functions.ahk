@@ -4,6 +4,11 @@ ProcessExist(Name) {
   return Errorlevel
 }
 
+WinGet(Cmd:="", WinTitle:="", WinText:="", ExcludeTitle:="", ExcludeText:="") {
+  WinGet, OutputVar, %Cmd%, %WinTitle%, %WinText%, %ExcludeTitle%, %ExcludeText%
+  Return %OutputVar%
+}
+
 DoExternalTasks(arrTasks) { ; Loops through an array of task commands, trying and logging each one.
   iTaskErrors := 0
   Loop % arrTasks.MaxIndex() {
