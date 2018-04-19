@@ -106,6 +106,7 @@ __main__: ; if we're running in __main__, we should have all the input we need f
   DoLogging("")
   DoLogging("__ __main__")
 
+  DoLogging(".. determining task phase")
   Loop, %0% { ; for each command line parameter
     If (%A_Index% = "/PHASEFOUR") {
       Gosub, __subTaskPhaseFour__
@@ -117,24 +118,6 @@ __main__: ; if we're running in __main__, we should have all the input we need f
       Gosub, __subTaskPhaseZero__
     }
   }
-
-; Login as User Yes
-; Re add Credentials Possibly Partially
-; Remove MSP Stuff  
-; Remove Old Office/Install Office 2016 Yes
-; Setup Email Ask Mark
-; Import C:\Users\<User>\Documents\*.PST  Probably
-; Import *.PST from Default 
-; Install chocolatey package  Yes
-; Install VPN (If See list) Yes
-; Verify Printers were copied 
-; Verify Mapped drives were copied  Yes
-; Verify Power Profile  Yes
-; Verify Splashtop Install  Yes
-; Verify DTC  Yes
-; Verify there ERP  No
-; Install Vipre Yes
-; Remove User from Administrators Yes
 
 ExitApp 0
 MsgBox Cthuhlu! ; This should never run!
