@@ -1,3 +1,24 @@
+convertHexToString(str) {
+  Loop % StrLen(str)//2 {
+    charInHex := SubStr(str, A_Index*2 - 1, 2)
+    charInDec := Format("{:u}", "0x" . charInHex)
+    retStr .= Chr(charInDec)    
+  }
+  Return retStr ; Return the string to the caller 
+}
+
+RegWrite(ValueType, KeyName, ValueName, Value) {
+  RegWrite, %ValueType%, %KeyName% , %ValueName%, %Value%
+  Return ErrorLevel
+}
+
+RegRead(KeyName, ValueName:="(Default)") {
+  OutputVar := ""
+  Try (
+    RegRead, OutputVar, KeyName, ValueName
+  )
+  Return OutputVar
+}
 
 ProcessExist(Name) {
   Process,Exist,%Name%
@@ -36,6 +57,29 @@ DoExternalTasks(arrTasks) { ; Loops through an array of task commands, trying an
   Return iTaskErrors
 }
 
+DoExternalTask(task) {
+  Try {
+      DoLogging("** "A_WorkingDir . "> " task)
+      shell := ComObjCreate("WScript.Shell") ; WshShell object: http://msdn.microsoft.com/en-us/library/aew9yb99
+      exec := shell.Exec(ComSpec " /C " task) ; Execute a single command via cmd.exe
+      While (!exec.StdOut.AtEndOfStream) { ;read the output line by line
+        DoLogging("   " exec.StdOut.ReadLine())
+      }
+      If (!exec.StdErr.AtEndOfStream) { ; It's important to note that this does NOT get StdErr in parallel with StdOut - if you stack four commands in a row, and the first two fail, you will get their error output AFTER the 3rd and 4th commands finish StdOut.
+        iTaskErrors += 1 ; This will only count once even if you stack commands! At least my error handling counts for something again...
+        DoLogging("!! STDERR:")
+        While (!exec.StdErr.AtEndOfStream) {
+          DoLogging("   " exec.StdErr.ReadLine())
+        }
+      }
+      DoLogging("")
+    } Catch {
+      iTaskErrors += 1
+      DoLogging("!! Error attempting External Task: "task . "!")
+    }
+  Return iTaskErrors
+}
+
 DoInternalTasks(arrTasks) { ; Loops through an array of task commands, trying and logging each one.
   iTaskErrors := 0
   ; parse!
@@ -67,6 +111,14 @@ DoInternalTasks(arrTasks) { ; Loops through an array of task commands, trying an
     DoLogging("!! Error during parsing!")
   }
   Return iTaskErrors
+}
+
+waitForWindowsInstaller() {
+  RunWait, Powershell.exe "Exit (Get-Eventlog -LogName `'Application`' -Source `'*MsiInstaller*`' -InstanceId 1040`,1042 -Newest 1).EventID", ,Hide
+  While (ErrorLevel != 1042) {
+    Sleep 100
+    RunWait, Powershell.exe "Exit (Get-Eventlog -LogName `'Application`' -Source `'*MsiInstaller*`' -InstanceId 1040`,1042 -Newest 1).EventID", ,Hide
+  }
 }
 
 ExitFunc(ExitReason, ExitCode) { ; Checks and logs various unusual program closures.

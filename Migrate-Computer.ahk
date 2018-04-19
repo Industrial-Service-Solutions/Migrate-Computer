@@ -24,7 +24,7 @@ Loop, %0% { ; For each parameter:
   }
 ShellExecute := A_IsUnicode ? "shell32\ShellExecute":"shell32\ShellExecuteA"
     
-if not A_IsAdmin {
+If not A_IsAdmin {
     If A_IsCompiled
        DllCall(ShellExecute, uint, 0, str, "RunAs", str, A_ScriptFullPath, str, params , str, A_WorkingDir, int, 1)
     Else
@@ -63,26 +63,26 @@ OnExit("ExitWait")
 ;   INITIALIZATION
 ;================================================================================
 __init__:
-Try {
-  Gui 1: Font,, Lucida Console
-  Gui 1: Add, Edit, Readonly x10 y10 w940 h620 vConsole ; I guess not everything has to be a function...
-  Gui 1: -SysMenu
-  Gui 1: Show, x20 y20 w960 h640, Console Window
-  DoLogging("   Console window up.",2)
-} Catch {
-  MsgBox failed to create console window! I can't run without console output! Dying now.
-  ExitApp
-}
-Try {
-  DoLogging("")
-  DoLogging("   ********************************************************************************")
-  DoLogging("   Migrate-Computer "strVersion . " initializing for machine: " A_ComputerName)
-  DoLogging("   ********************************************************************************")
-  DoLogging("")
-} Catch  {
-  MsgBox Writing to logfile failed! You probably need to check file permissions. I won't run without my log! Dying now.
-  ExitApp
-}
+  Try {
+    Gui 1: Font,, Lucida Console
+    Gui 1: Add, Edit, Readonly x10 y10 w940 h620 vConsole ; I guess not everything has to be a function...
+    Gui 1: -SysMenu
+    Gui 1: Show, x20 y20 w960 h640, Console Window
+    DoLogging("   Console window up.",2)
+  } Catch {
+    MsgBox failed to create console window! I can't run without console output! Dying now.
+    ExitApp
+  }
+  Try {
+    DoLogging("")
+    DoLogging("   ********************************************************************************")
+    DoLogging("   Migrate-Computer "strVersion . " initializing for machine: " A_ComputerName)
+    DoLogging("   ********************************************************************************")
+    DoLogging("")
+  } Catch  {
+    MsgBox Writing to logfile failed! You probably need to check file permissions. I won't run without my log! Dying now.
+    ExitApp
+  }
 
 ;   ================================================================================
 ;   STARTUP
@@ -92,8 +92,10 @@ __startup__:
   DoLogging("__ __startup__")
   ; WinMinimizeAll
   WinRestore, Console Window
-  Gosub __subStartupGUI__ ; Here is where we construct the GUI and get the specific information we need
-  Return ; Execution should stop here until the user submits ButtonStart
+
+  ; determine Powershell version
+
+
 
 MsgBox Cthuhlu! ; This should never run!
 
@@ -104,25 +106,23 @@ __main__: ; if we're running in __main__, we should have all the input we need f
   DoLogging("")
   DoLogging("__ __main__")
 
+  Loop, %0% { ; for each command line parameter
+    If (%A_Index% = "/PHASEFOUR") {
+      Gosub, __subTaskPhaseFour__
+    } Else If (%A_Index% = "/PHASETHREE") {
+      Gosub, __subTaskPhaseThree__
+    } Else If (%A_Index% = "/PHASETWO"){
+      Gosub, __subTaskPhaseTwo__
+    } Else {
+      Gosub, __subTaskPhaseZero__
+    }
+  }
 
-  Gosub, __subExportInformation__
-
-; create local account
-
-  Gosub, __subRemoveFromDomain__ ; then reboot
-
-; Rename/Join Domain/Reboot Yes
-; Login as user/Log Out Yes
-; Login with Domain Admin Yes
-; Add user to Admin group Yes
-; Copy Profile MADSMITH.LCL User to ISS.lcl Only Kind Of
-; Reboot  Yes
 ; Login as User Yes
 ; Re add Credentials Possibly Partially
 ; Remove MSP Stuff  
 ; Remove Old Office/Install Office 2016 Yes
 ; Setup Email Ask Mark
-; Set 'Cached Exchange Mode' to '12 months' Probably
 ; Import C:\Users\<User>\Documents\*.PST  Probably
 ; Import *.PST from Default 
 ; Install chocolatey package  Yes
